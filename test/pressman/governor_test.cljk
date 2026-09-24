@@ -1,5 +1,5 @@
 (ns pressman.governor-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [pressman.store :as store]
             [pressman.advisor :as advisor]
             [pressman.governor :as governor]))
