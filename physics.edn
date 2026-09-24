@@ -1,0 +1,43 @@
+;; What this vertical's robot physically does, declared for
+;; kotoba.robotics.process (kotoba-lang/robotics). `kbb -M:physics` runs it.
+;;
+;; README "Robotics premise": a print-shop scheduling/logistics coordination
+;; robot handles crew scheduling, job/materials-usage records and ink/paper
+;; supply orders for a print-shop crew (ISCO 7322). Its physical work: moving
+;; paper reels from the store to the press, lifting reams onto the sheet
+;; feeder, and pumping ink from the drum to the press ink fountain.
+;;
+;; Every number without a cited source is marked `estimate` in its :basis.
+;; Replacing an estimate with a sourced value is this bot's growth work.
+{:physics/schema "itonami.physical-ai.spec.v1"
+ :repo "cloud-itonami/cloud-itonami-isco-7322"
+ :cases
+ [{:id :paper-reel-to-press
+   :kind :transport
+   :procedure "AGV carries a paper reel from the paper store to the press reel stand"
+   :params {:mass-kg 400.0 :distance-m 50.0 :v-max-mps 1.0 :a-max-mps2 0.3
+            :brake-decel-mps2 0.5 :drive-force-n 1200.0 :crr 0.01
+            :cog-height-m 0.30 :support-half-length-m 0.50 :payload-cog-height-m 0.80
+            :max-time-s 1800.0}
+   :sweep {:param :payload-kg :values [300.0 600.0 1000.0 1500.0 2000.0]}
+   :quantity :cycle-time-s
+   :limit {:max 70.0 :basis "estimate: reel change must be staged within the press's reel-change window"}
+   :boundary {:lo 100.0 :hi 20000.0}}
+  {:id :ream-onto-feeder
+   :kind :manipulator
+   :procedure "arm lifts reams of sheet paper from the pallet onto the press feeder pile"
+   :params {:l1-m 0.60 :l2-m 0.50 :m1-kg 8.0 :m2-kg 6.0
+            :from [0.60 0.10] :to [0.85 0.50] :duration-s 3.0 :steps 500}
+   :sweep {:param :payload-kg :values [2.5 5.0 7.5 10.0 12.5]}
+   :quantity :peak-tau1-nm
+   :limit {:max 150.0 :basis "estimate: continuous shoulder torque of a 10 kg-payload class collaborative arm at ~1.1 m reach"}
+   :boundary {:lo 0.5 :hi 40.0}}
+  {:id :ink-drum-to-fountain
+   :kind :pipe-flow
+   :procedure "pump transfers liquid (flexo/gravure-type) ink from the drum to the press ink fountain through a 25 mm hose"
+   :params {:q-m3s 0.0002 :diameter-m 0.025 :length-m 15.0 :roughness-m 1.5e-6
+            :density-kg-m3 1100.0 :pump-efficiency 0.50 :elevation-m 2.0}
+   :sweep {:param :viscosity-pa-s :values [0.05 0.1 0.3 0.6 1.0]}
+   :quantity :pressure-drop-pa
+   :limit {:max 600000.0 :basis "estimate: 6 bar outlet rating assumed for the drum transfer pump; ink viscosity range is an assumption for liquid inks"}
+   :boundary {:lo 0.01 :hi 5.0}}]}
