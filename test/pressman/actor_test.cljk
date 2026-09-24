@@ -1,5 +1,5 @@
 (ns pressman.actor-test
-  (:require [clojure.test :refer [deftest is testing]]
+  (:require [kotoba.test :refer [deftest is testing]]
             [pressman.actor :as actor]
             [pressman.store :as store]))
 
